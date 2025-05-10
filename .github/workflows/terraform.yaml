@@ -58,10 +58,10 @@ jobs:
         working-directory: ${{ env.TF_DIR }}
         run: terraform init -backend-config="key=${{ env.TF_ENV }}/terraform.tfstate"
 
-      - name: Terraform plan (destroy)
-        if: ${{ github.event.inputs.action == 'destroy' }}
+      - name: Terraform plan (apply)
+        if: ${{ github.event.inputs.action != 'destroy' }}
         working-directory: ${{ env.TF_DIR }}
-        run: terraform  -destroy -lock=false
+        run: terraform apply -auto-approve -lock=false
 
       - name: Terraform plan (destroy)
         if: ${{ github.event.inputs.action == 'destroy' }}
