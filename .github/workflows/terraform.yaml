@@ -1,6 +1,6 @@
 permissions:
-  id-token: write # Required for OIDC authentication
-  contents: read  # Required for actions/checkout
+  id-token: write
+  contents: read
 
 name: Terraform-AWS-Infra-Deployment
 
@@ -20,9 +20,9 @@ on:
         required: true
         default: "us-east-2"
       action:
-        description: "Terraform action: apply (default) or destroy"
+        description: "Terraform action: apply or destroy"
         required: false
-        default: "destroy"
+        default: "apply"
 
 concurrency:
   group: terraform-${{ github.ref }}
@@ -58,12 +58,12 @@ jobs:
         working-directory: ${{ env.TF_DIR }}
         run: terraform init -backend-config="key=${{ env.TF_ENV }}/terraform.tfstate"
 
-      - name: Terraform plan (apply)
+      - name: Terraform Plan (Apply)
         if: ${{ github.event.inputs.action != 'destroy' }}
         working-directory: ${{ env.TF_DIR }}
-        run: terraform apply -auto-approve -lock=false
+        run: terraform plan -lock=false
 
-      - name: Terraform plan (destroy)
+      - name: Terraform Plan (Destroy)
         if: ${{ github.event.inputs.action == 'destroy' }}
         working-directory: ${{ env.TF_DIR }}
         run: terraform plan -destroy -lock=false
@@ -96,13 +96,3 @@ jobs:
       - name: Terraform init
         working-directory: ${{ env.TF_DIR }}
         run: terraform init -backend-config="key=${{ env.TF_ENV }}/terraform.tfstate"
-
-      - name: Terraform apply
-        if: ${{ github.event.inputs.action != 'destroy' }}
-        working-directory: ${{ env.TF_DIR }}
-        run: terraform apply -auto-approve -lock=false
-
-      - name: Terraform destroy
-        if: ${{ github.event.inputs.action == 'destroy' }}
-        working-directory: ${{ env.TF_DIR }}
-        run: terraform destroy -auto-approve -lock=false
