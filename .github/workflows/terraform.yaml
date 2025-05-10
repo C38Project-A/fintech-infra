@@ -22,7 +22,7 @@ on:
       action:
         description: "Terraform action: apply (default) or destroy"
         required: false
-        default: "apply"
+        default: "destroy"
 
 concurrency:
   group: terraform-${{ github.ref }}
