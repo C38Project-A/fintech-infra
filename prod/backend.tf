@@ -5,6 +5,5 @@ terraform {
     bucket         = "class38-terraform-backend-bucket-project"
     region         = "us-east-2"
     dynamodb_table = "terraform-state-locking"
-    encrypt        = true
   }
 }
