@@ -23,6 +23,7 @@ on:
         description: "Terraform action: destroy (default) or apply"
         required: false
         default: "destroy"
+        type: choice
         options:
         - destroy
         - apply
