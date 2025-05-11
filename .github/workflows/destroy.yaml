@@ -20,9 +20,12 @@ on:
         required: true
         default: "us-east-2"
       action:
-        description: "Terraform action: destroy"
+        description: "Terraform action: destroy (default) or apply"
         required: false
         default: "destroy"
+        options:
+        - destroy
+        - apply
 
 concurrency:
   group: terraform-${{ github.ref }}
