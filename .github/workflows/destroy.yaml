@@ -15,6 +15,14 @@ on:
         description: "AWS Region"
         required: true
         default: "us-east-2"
+      action:
+        description: "Terraform action: destroy (default) or apply"
+        required: false
+        default: "destroy"
+        type: choice
+        options:
+        - destroy
+        - apply
 
 concurrency:
   group: terraform-destroy-${{ github.ref }}
