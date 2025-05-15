@@ -51,66 +51,53 @@ module "eks-client-node" {
   key_name = module.eks-client-node.eks_client_private_key
   user_data = base64encode(<<-EOF
     #!/bin/bash
-set -euo pipefail
+    set -e
 
-echo "Updating packages and installing prerequisites..."
-sudo apt-get update -y
-sudo apt-get install -y unzip gnupg software-properties-common curl lsb-release wget apt-transport-https ca-certificates
+    echo "Updating packages and installing prerequisites..."
+    sudo apt-get update -y
+    sudo apt-get install -y unzip gnupg software-properties-common curl lsb-release
 
-echo "Installing AWS CLI..."
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-unzip -q awscliv2.zip
-sudo ./aws/install
-rm -rf awscliv2.zip aws
+    echo "Installing AWS CLI..."
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
 
-echo "Installing Terraform..."
-wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
-echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
-    sudo tee /etc/apt/sources.list.d/hashicorp.list > /dev/null
-sudo apt-get update -y
-sudo apt-get install -y terraform
+    echo "Installing Terraform..."
+    wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /prod/null
+    echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+    sudo apt-get update -y
+    sudo apt-get install -y terraform
 
-echo "Installing kubectl for Amazon EKS..."
-KUBECTL_VERSION="1.31.3"
-KUBECTL_DATE="2024-12-12"
-ARCH="amd64"
-curl -LO "https://s3.us-west-2.amazonaws.com/amazon-eks/${KUBECTL_VERSION}/${KUBECTL_DATE}/bin/linux/${ARCH}/kubectl"
-chmod +x kubectl
-mkdir -p "$HOME/bin"
-mv kubectl "$HOME/bin/kubectl"
-
-# Add $HOME/bin to PATH if not already there
-if [[ ":$PATH:" != *":$HOME/bin:"* ]]; then
-    echo 'export PATH="$HOME/bin:$PATH"' >> "$HOME/.bashrc"
+    echo "Installing kubectl for Amazon EKS..."
+    curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.31.3/2024-12-12/bin/linux/amd64/kubectl
+    chmod +x ./kubectl
+    mkdir -p "$HOME/bin"
+    cp ./kubectl "$HOME/bin/kubectl"
     export PATH="$HOME/bin:$PATH"
-fi
 
-echo "Installing Amazon SSM Agent..."
-if snap list | grep -q amazon-ssm-agent; then
-    echo "Amazon SSM Agent is already installed."
-else
-    sudo snap install amazon-ssm-agent --classic
-    sudo systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service
-    sudo systemctl start snap.amazon-ssm-agent.amazon-ssm-agent.service
-fi
-
-echo "Installing Docker..."
-sudo apt-get remove -y docker docker-engine docker.io containerd runc || true
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
-  https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-sudo apt-get update -y
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-sudo systemctl enable docker
-sudo systemctl start docker
-sudo usermod -aG docker "$USER"
-
-echo
-echo "✅ Installation of AWS CLI, Terraform, kubectl, Amazon SSM Agent, and Docker is complete."
-echo "⚠️  You may need to log out and log back in or run 'newgrp docker' for Docker group changes to take effect."
+    echo "Installing Amazon SSM Agent..."
+    if snap list amazon-ssm-agent >/prod/null 2>&1; then
+      echo "Amazon SSM Agent is already installed."
+    else
+      sudo snap install amazon-ssm-agent --classic
+      sudo systemctl enable snap.amazon-ssm-agent.amazon-ssm-agent.service
+      sudo systemctl start snap.amazon-ssm-agent.amazon-ssm-agent.service
+    fi
+    echo "Installing Docker..."
+    sudo apt-get remove -y docker docker-engine docker.io containerd runc
+    sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common gnupg
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /prod/null
+    sudo apt-get update -y
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+    sudo systemctl enable docker
+    sudo systemctl start docker
+    sudo usermod -aG docker $USER
+    newgrp docker
+    echo "Installation of AWS CLI, Terraform, kubectl, Amazon SSM Agent, and Docker is complete."
+  EOF
+  )
+}
 
 
 
