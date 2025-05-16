@@ -22,7 +22,7 @@ on:
       action:
         description: "Terraform action: apply or destroy"
         required: false
-        default: "apply"
+        default: "destory"
 
 concurrency:
   group: terraform-${{ github.ref }}
@@ -97,10 +97,10 @@ jobs:
         working-directory: ${{ env.TF_DIR }}
         run: terraform init -backend-config="key=${{ env.TF_ENV }}/terraform.tfstate"
 
-      - name: Terraform apply
+      - name: Terraform destory
         if: ${{ github.event.inputs.action != 'destroy' }}
         working-directory: ${{ env.TF_DIR }}
-        run: terraform apply -auto-approve -lock=false
+        run: terraform destory -auto-approve -lock=false
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'destroy' }}
