@@ -101,7 +101,6 @@ module "eks-client-node" {
 
 
 
-
 module "acm" {
   source          = "./../modules/acm"
   domain_name     = var.domain_name
@@ -212,5 +211,3 @@ module "maven-sonarqube-server" {
 #   private_subnets           = module.vpc.private_subnets
 #   grafana_security_group_id = module.managed_grafana.security_group_id
 # }
-
-
